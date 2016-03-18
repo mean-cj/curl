@@ -4,6 +4,7 @@
 class Builder {
 
     protected $curlObject = null;
+    private $savefile = false;
 
     protected $curlOptions = array(
         'RETURNTRANSFER'        => true,
@@ -149,6 +150,16 @@ class Builder {
 
         return $this->send();
     }
+    
+    /*
+    * Download
+    */
+    public function download($savefile)
+    {
+        $this-> savefile = $$savefile;
+        return $this;
+    }
+
 
     /**
      * Add POST parameters to the curlOptions array
@@ -207,8 +218,15 @@ class Builder {
         $response = curl_exec( $this->curlObject );
         curl_close( $this->curlObject );
 
+        if( $this-> savefile )
+        {
+            $fp = fopen($this-> savefile, 'w');
+            fwrite($fp, $response);
+            fclose($fp);
+        }
+
         // Decode the request if necessary
-        if( $this->packageOptions[ 'asJson' ] ) {
+        else if( $this->packageOptions[ 'asJson' ] ) {
             $response = json_decode( $response, $this->packageOptions[ 'returnAsArray' ] );
         }
 
